@@ -1,25 +1,26 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "Build SFML",
-            "type": "shell",
-            "command": "g++",
-            "args": [
-                "test.cpp",
-                "-IC:/Users/johan/Desktop/SFML/include",
-                "-LC:/Users/johan/Desktop/SFML/lib",
-                "-lsfml-graphics",
-                "-lsfml-window",
-                "-lsfml-system",
-                "-o",
-                "test"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": []
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Pacman",
+      "type": "shell",
+      "command": "g++",
+      "args": [
+        "main.cpp",
+        "grille.cpp",
+        "-IC:/SFML/include",
+        "-LC:/SFML/lib",
+        "-lsfml-graphics",
+        "-lsfml-window",
+        "-lsfml-system",
+        "-o",
+        "pacman"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"]
+    }
+  ]
 }

@@ -1,8 +1,17 @@
 #include <SFML/Graphics.hpp>
+#include "grille.hpp"
 
 int main() {
+
+
+    // taille du carrz
+    const int tileSize = 32;
+
+    // création de la grille
+    Grille grille(tileSize);
+
     //Cr&ation de la fenêtre
-    sf::RenderWindow window(sf::VideoMode({600, 600}), "Pacman");
+    sf::RenderWindow window(sf::VideoMode(sf::Vector2u(grille.cols()*tileSize, grille.rows() * tileSize)), "Pacman");
 
     // Création du cercle pour Pacman 
     sf::CircleShape pacman(20.f);
@@ -46,6 +55,7 @@ int main() {
 
         // Etape pour ce qui s'affiche dans la fenêtre : on efface tout, on redessine le pacman et on affiche le résultat à l'écran
         window.clear();
+        grille.draw(window);
         window.draw(pacman);
         window.display();
     }
