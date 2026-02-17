@@ -1,0 +1,25 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build SFML",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "test.cpp",
+                "-IC:/Users/johan/Desktop/SFML/include",
+                "-LC:/Users/johan/Desktop/SFML/lib",
+                "-lsfml-graphics",
+                "-lsfml-window",
+                "-lsfml-system",
+                "-o",
+                "test"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}
