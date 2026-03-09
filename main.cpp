@@ -112,7 +112,7 @@ int main() {
             (directionActuelle.x != 0 && directionDemandee.x != 0) ||
             (directionActuelle.y != 0 && directionDemandee.y != 0);
 
-        bool changementAxe = // regarde siu on change d'axe
+        bool changementAxe = // regarde si on change d'axe
             (directionActuelle.x != 0 && directionDemandee.y != 0) ||
             (directionActuelle.y != 0 && directionDemandee.x != 0);
 
