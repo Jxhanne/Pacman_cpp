@@ -68,6 +68,16 @@ void Grille::draw(sf::RenderWindow& window)
     }
 }
 
+void Grille::point(int x, int y)
+{
+    int score = 0;
+    if (map[y][x] == '.')
+    {
+        map[y][x] = ' '; // On remplace le point par un espace pour indiquer qu'il a été mangé
+        score++;
+    }
+}
+
 // ligne
 int Grille::rows() const
 {
@@ -78,4 +88,14 @@ int Grille::rows() const
 int Grille::cols() const
 {
     return (int)map[0].size();
+}
+
+// foncer dans les murs
+bool Grille::isWall(int x, int y) const
+{
+    // sécurité :: si on sort de la grille 
+    if (x < 0 || x >= cols() || y < 0 || y >= rows())
+        return true;
+    // vérifier si la case contient un mur
+    return map [y][x] == '#';
 }
