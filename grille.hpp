@@ -18,4 +18,5 @@ private: // ce qui appartient à la grille en interne
 
     sf::RectangleShape wall; // forme du mur 
     sf::CircleShape pellet; // forme de la nourriture
+    sf::CircleShape gros_pellet;
 };

@@ -10,16 +10,17 @@
 Grille::Grille(int t)
 :   tileSize(t),
     wall(sf::Vector2f((float)t, (float)t)),
-    pellet(t * 0.12f)
+    pellet(t * 0.12f),
+    gros_pellet(t * 0.25f)
 {
     map = { // plateau de jeu
         "############################",
-        "#............##............#",
+        "#*...........##...........*#",
         "#.####.#####.##.#####.####.#",
         "#.#  #.#   #.##.#   #.#  #.#",
         "#.####.#####.##.#####.####.#",
         "#..........................#",
-        "#.####.##.########.##.####.#",
+        "#.####.##.##    ##.##.####.#",
         "#......##....##....##......#",
         "######.#####.##.#####.######",
         "#............##............#",
@@ -28,7 +29,7 @@ Grille::Grille(int t)
         "###.##.##.#########.##.##.##",
         "#......##....##....##......#",
         "#.##########.##.##########.#",
-        "#..........................#",
+        "#*........................*#",
         "############################"
     };
 
@@ -38,6 +39,10 @@ Grille::Grille(int t)
     // création point
     pellet.setFillColor(sf::Color::White);
     pellet.setOrigin({pellet.getRadius(), pellet.getRadius()}); // utile pour centrer dans la case les points
+
+    // création grps points
+    gros_pellet.setFillColor(sf::Color::White);
+    gros_pellet.setOrigin({gros_pellet.getRadius(), gros_pellet.getRadius()}); // utile pour centrer dans la case les points
 }
 
 // fonction qui dessine la grille (PAS de boucle window ici)
@@ -64,6 +69,11 @@ void Grille::draw(sf::RenderWindow& window)
                 pellet.setPosition({pos.x + tileSize/2.f, pos.y + tileSize/2.f}); // centrer le point
                 window.draw(pellet);
             }
+            else if (c == '*')
+            {
+                gros_pellet.setPosition({pos.x + tileSize/2.f, pos.y + tileSize/2.f}); // centrer le point
+                window.draw(gros_pellet);
+            }
         }
     }
 }
@@ -75,6 +85,10 @@ void Grille::point(int x, int y)
     {
         map[y][x] = ' '; // On remplace le point par un espace pour indiquer qu'il a été mangé
         score++;
+    }
+    else if (map[y][x] == '*')
+    {
+        map[y][x] = ' ';
     }
 }
 

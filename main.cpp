@@ -29,6 +29,10 @@ int main() {
 
     sf::Sprite pacman(pacmanTextures[0]);
 
+    // création des fantomes 
+    sf::CircleShape fantome(tileSize * 0.4f);
+    fantome.setFillColor(sf::Color::Red);
+
     pacman.setOrigin({
     pacman.getLocalBounds().size.x / 2.f,
     pacman.getLocalBounds().size.y / 2.f
@@ -42,11 +46,25 @@ int main() {
         diametre / bounds.y
     });
     
-
+    // position du pacman au départ
     pacman.setPosition({
         startX * tileSize + tileSize / 2.f,
         startY * tileSize + tileSize / 2.f
     });
+
+    // position fantôme 
+    int ghostStartX = 1;
+    int ghostStartY = 5;
+
+    float rayonFantome = fantome.getRadius();
+
+    fantome.setPosition({
+        ghostStartX * tileSize + tileSize / 2.f - rayonFantome,
+        ghostStartY * tileSize + tileSize / 2.f - rayonFantome
+    }); 
+
+    // direction fantome
+    sf::Vector2f directionFantome = {60.f, 0.f};
 
     float speed = 90.f; // gérer la vitesse de déplacement de Pacman 
     sf::Vector2f directionActuelle = {0.f, 0.f};
@@ -195,10 +213,46 @@ int main() {
         int Y = (pacman.getPosition().y) / tileSize;
         grille.point(X, Y);
 
+        //mouvement fantome
+        float rayonFantome = fantome.getRadius();
+
+        sf::Vector2f mouvementFantome = directionFantome * dt;
+        sf::Vector2f nextPosFantome = fantome.getPosition() + mouvementFantome;
+        sf::Vector2f nextCenterFantome = nextPosFantome + sf::Vector2f(rayonFantome, rayonFantome);
+
+        sf::Vector2f testPointFantome = nextCenterFantome;
+
+        if (directionFantome.x > 0) {
+            testPointFantome.x += rayonFantome;
+        }
+        else if (directionFantome.x < 0) {
+            testPointFantome.x -= rayonFantome;
+        }
+        else if (directionFantome.y > 0) {
+            testPointFantome.y += rayonFantome;
+        }
+        else if (directionFantome.y < 0) {
+            testPointFantome.y -= rayonFantome;
+        }
+
+        int ghostCellX = (int)(testPointFantome.x / tileSize);
+        int ghostCellY = (int)(testPointFantome.y / tileSize);
+
+        bool ghostBlocked = grille.isWall(ghostCellX, ghostCellY);
+
+        if (!ghostBlocked) { // si il n'est pas bloqué
+            fantome.move(mouvementFantome); // onn le fait bouger
+        }
+        else {
+            directionFantome = -directionFantome; // il va à l'inverse
+        }
+
         // Etape pour ce qui s'affiche dans la fenêtre
+
         window.clear();
         grille.draw(window);
         window.draw(pacman);
+        window.draw(fantome);
         window.display();
     }
 
