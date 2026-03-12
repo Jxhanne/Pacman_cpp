@@ -2,8 +2,19 @@
 #include "grille.hpp"
 #include <cmath>
 #include <vector>
+#include "start.hpp"
 
 int main() {
+
+    sf::RenderWindow window(
+        sf::VideoMode({800u, 600u}), 
+        "Pac-Man"
+    );
+
+    // Écran de début
+    if (!showStartScreen(window)) {
+        return 0;
+    }
 
     // taille du carregit 
     const int tileSize = 32;
@@ -11,21 +22,17 @@ int main() {
     // création de la grille
     Grille grille(tileSize);
 
-    //Cr&ation de la fenêtre
-    sf::RenderWindow window(sf::VideoMode(sf::Vector2u(grille.cols()*tileSize, grille.rows() * tileSize)), "Pacman");
-
-
     int startX = 1; // case x de depart
     int startY = 1; // case y de depart
 
     
     std::vector<sf::Texture> pacmanTextures(5);
 
-    if (!pacmanTextures[0].loadFromFile("img/1.png")) return -1;
-    if (!pacmanTextures[1].loadFromFile("img/2.png")) return -1;
-    if (!pacmanTextures[2].loadFromFile("img/3.png")) return -1;
-    if (!pacmanTextures[3].loadFromFile("img/4.png")) return -1;
-    if (!pacmanTextures[4].loadFromFile("img/5.png")) return -1;
+    if (!pacmanTextures[0].loadFromFile("assets/1.png")) return -1;
+    if (!pacmanTextures[1].loadFromFile("assets/2.png")) return -1;
+    if (!pacmanTextures[2].loadFromFile("assets/3.png")) return -1;
+    if (!pacmanTextures[3].loadFromFile("assets/4.png")) return -1;
+    if (!pacmanTextures[4].loadFromFile("assets/5.png")) return -1;
 
     sf::Sprite pacman(pacmanTextures[0]);
 
