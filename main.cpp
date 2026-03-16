@@ -13,6 +13,21 @@ int main() {
 
     //Cr&ation de la fenêtre
     sf::RenderWindow window(sf::VideoMode(sf::Vector2u(grille.cols()*tileSize, grille.rows() * tileSize+tileSize*2)), "Pacman");
+    if (!showStartScreen(window)) {
+        return 0;
+    }
+
+    // affichage du texte du score
+    sf::Font font2;
+    if (!font2.openFromFile("img/font/namco__.ttf")) {
+        return -1; // erreur si la police ne charge pas
+    }
+
+    sf::Text scoreText(font2, "score ", 20);
+    scoreText.setFillColor(sf::Color::Yellow);
+    scoreText.setPosition({30.f, 5.f});
+
+
 
 
     int startX = 1; // case x de depart
@@ -170,6 +185,16 @@ int main() {
             pacman.setPosition({centerX, pacman.getPosition().y}); // idem ci-dessus
         }
 
+        // tunnel de gauche à droite
+        float droiteX = grille.cols() * tileSize; // la dernière colonne de droite (vide)
+        float gaucheX = 0.f; // la première colonne de gauche (vide)
+        if (pacman.getPosition().x < gaucheX) {
+            pacman.setPosition({droiteX, pacman.getPosition().y});
+        }
+        else if (pacman.getPosition().x > droiteX) {
+            pacman.setPosition({gaucheX, pacman.getPosition().y});
+        }
+
         center = pacman.getPosition(); // on a change sa postion donc on recalule le centre pour bien aligné
 
         sf::Vector2f mouvement = directionActuelle * dt; // calcul du mouvmeent de la framer 
@@ -247,12 +272,19 @@ int main() {
             directionFantome = -directionFantome; // il va à l'inverse
         }
 
+        // Si le Pacman mange un point, on change la couleur du point pour ne plus l'afficher
+        int X = (pacman.getPosition().x) / tileSize; // calculer la position du pacman en fonction
+        int Y = (pacman.getPosition().y) / tileSize;
+        score += grille.point(X, Y);
+        scoreText.setString("score " + std::to_string(score) + " points");
+
         // Etape pour ce qui s'affiche dans la fenêtre
 
         window.clear();
         grille.draw(window);
         window.draw(pacman);
         window.draw(fantome);
+        window.draw(scoreText);
         window.display();
     }
 
