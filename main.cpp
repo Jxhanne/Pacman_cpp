@@ -5,14 +5,14 @@
 
 int main() {
 
-    // taille du carregit 
+    // taille du carre
     const int tileSize = 32;
 
     // création de la grille
     Grille grille(tileSize);
 
     //Cr&ation de la fenêtre
-    sf::RenderWindow window(sf::VideoMode(sf::Vector2u(grille.cols()*tileSize, grille.rows() * tileSize)), "Pacman");
+    sf::RenderWindow window(sf::VideoMode(sf::Vector2u(grille.cols()*tileSize, grille.rows() * tileSize+tileSize*2)), "Pacman");
 
 
     int startX = 1; // case x de depart
@@ -214,15 +214,15 @@ int main() {
         grille.point(X, Y);
 
         //mouvement fantome
-        float rayonFantome = fantome.getRadius();
+        float rayonFantome = fantome.getRadius(); // on obtient le rayon du cercle
 
-        sf::Vector2f mouvementFantome = directionFantome * dt;
-        sf::Vector2f nextPosFantome = fantome.getPosition() + mouvementFantome;
-        sf::Vector2f nextCenterFantome = nextPosFantome + sf::Vector2f(rayonFantome, rayonFantome);
+        sf::Vector2f mouvementFantome = directionFantome * dt; // *dt pour qu'il aille à l amême vitesse tout le temps
+        sf::Vector2f nextPosFantome = fantome.getPosition() + mouvementFantome; // on calcule la futurue position possible
+        sf::Vector2f nextCenterFantome = nextPosFantome + sf::Vector2f(rayonFantome, rayonFantome); // et le futur centre 
 
-        sf::Vector2f testPointFantome = nextCenterFantome;
+        sf::Vector2f testPointFantome = nextCenterFantome; // on initialise le testpoint pour qu'il teste oû sont les murs
 
-        if (directionFantome.x > 0) {
+        if (directionFantome.x > 0) { // ces conditions déplace le testpoint pour qu'il soit placé au bon endroit "sur" le fantome
             testPointFantome.x += rayonFantome;
         }
         else if (directionFantome.x < 0) {
@@ -235,10 +235,10 @@ int main() {
             testPointFantome.y -= rayonFantome;
         }
 
-        int ghostCellX = (int)(testPointFantome.x / tileSize);
+        int ghostCellX = (int)(testPointFantome.x / tileSize); // la cellule du fantome x 
         int ghostCellY = (int)(testPointFantome.y / tileSize);
 
-        bool ghostBlocked = grille.isWall(ghostCellX, ghostCellY);
+        bool ghostBlocked = grille.isWall(ghostCellX, ghostCellY); //on regarde is la cellule testé est un mur
 
         if (!ghostBlocked) { // si il n'est pas bloqué
             fantome.move(mouvementFantome); // onn le fait bouger
