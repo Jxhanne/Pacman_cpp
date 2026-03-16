@@ -42,6 +42,7 @@ Grille::Grille(int t)
     // créartion du mur
     wall.setFillColor(sf::Color::Blue);
 
+<<<<<<< HEAD
     //création point
     pellet1.setFillColor(sf::Color::Yellow); // jaune
     pellet1.setOrigin({pellet1.getRadius(), pellet1.getRadius()}); // centrer le point
@@ -51,6 +52,15 @@ Grille::Grille(int t)
     pellet3.setOrigin({pellet3.getRadius(), pellet3.getRadius()}); // centrer le point
     pellet4.setFillColor(sf::Color::Red); // rouge
     pellet4.setOrigin({pellet4.getRadius(), pellet4.getRadius()}); // centrer le point
+=======
+    // création point
+    pellet.setFillColor(sf::Color::White);
+    pellet.setOrigin({pellet.getRadius(), pellet.getRadius()}); // utile pour centrer dans la case les points
+
+    // création grps points
+    gros_pellet.setFillColor(sf::Color::White);
+    gros_pellet.setOrigin({gros_pellet.getRadius(), gros_pellet.getRadius()}); // utile pour centrer dans la case les points
+>>>>>>> 9142afbd7ee61ec9861e1b1d8c736fbeb8e201a8
 }
 
 // fonction qui dessine la grille (PAS de boucle window ici)
@@ -99,6 +109,11 @@ void Grille::draw(sf::RenderWindow& window)
                 pellet4.setPosition({pos.x + tileSize/2.f, pos.y + tileSize/2.f}); // centrer le point
                 window.draw(pellet4);
             }
+            else if (c == '*')
+            {
+                gros_pellet.setPosition({pos.x + tileSize/2.f, pos.y + tileSize/2.f}); // centrer le point
+                window.draw(gros_pellet);
+            }
         }
     }
 }
@@ -122,6 +137,7 @@ int Grille::point(int x, int y)
         }
         return 500;
     }
+<<<<<<< HEAD
     else if (map[y][x] == 'v') 
     {
         map[y][x] = ' ';
@@ -134,6 +150,12 @@ int Grille::point(int x, int y)
         return 1000; // cerise
     }
     return 0;
+=======
+    else if (map[y][x] == '*')
+    {
+        map[y][x] = ' ';
+    }
+>>>>>>> 9142afbd7ee61ec9861e1b1d8c736fbeb8e201a8
 }
 
 // ligne
