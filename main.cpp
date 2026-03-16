@@ -2,11 +2,13 @@
 #include "grille.hpp"
 #include <cmath>
 #include <vector>
+#include "start.hpp"
 
 int main() {
 
     // taille du carre
     const int tileSize = 32;
+    int score = 0; // score du joueur
 
     // création de la grille
     Grille grille(tileSize);
@@ -19,7 +21,7 @@ int main() {
 
     // affichage du texte du score
     sf::Font font2;
-    if (!font2.openFromFile("img/font/namco__.ttf")) {
+    if (!font2.openFromFile("assets/PressStart2P-Regular.ttf")) {
         return -1; // erreur si la police ne charge pas
     }
 
@@ -36,11 +38,11 @@ int main() {
     
     std::vector<sf::Texture> pacmanTextures(5);
 
-    if (!pacmanTextures[0].loadFromFile("img/1.png")) return -1;
-    if (!pacmanTextures[1].loadFromFile("img/2.png")) return -1;
-    if (!pacmanTextures[2].loadFromFile("img/3.png")) return -1;
-    if (!pacmanTextures[3].loadFromFile("img/4.png")) return -1;
-    if (!pacmanTextures[4].loadFromFile("img/5.png")) return -1;
+    if (!pacmanTextures[0].loadFromFile("assets/1.png")) return -1;
+    if (!pacmanTextures[1].loadFromFile("assets/2.png")) return -1;
+    if (!pacmanTextures[2].loadFromFile("assets/3.png")) return -1;
+    if (!pacmanTextures[3].loadFromFile("assets/4.png")) return -1;
+    if (!pacmanTextures[4].loadFromFile("assets/5.png")) return -1;
 
     sf::Sprite pacman(pacmanTextures[0]);
 
@@ -69,7 +71,7 @@ int main() {
 
     // position fantôme 
     int ghostStartX = 1;
-    int ghostStartY = 5;
+    int ghostStartY = 4;
 
     float rayonFantome = fantome.getRadius();
 
@@ -233,10 +235,6 @@ int main() {
         if (!bloque) {
             pacman.move(mouvement); // on avance qye si la route est libre 
         }
-        // Si le Pacman mange un point, on change la couleur du point pour ne plus l'afficher
-        int X = (pacman.getPosition().x) / tileSize; // calculer la position du pacman en fonction
-        int Y = (pacman.getPosition().y) / tileSize;
-        grille.point(X, Y);
 
         //mouvement fantome
         float rayonFantome = fantome.getRadius(); // on obtient le rayon du cercle
