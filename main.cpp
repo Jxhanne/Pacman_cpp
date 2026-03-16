@@ -5,14 +5,29 @@
 
 int main() {
 
-    // taille du carregit 
+    // taille du carre
     const int tileSize = 32;
 
     // création de la grille
     Grille grille(tileSize);
 
     //Cr&ation de la fenêtre
-    sf::RenderWindow window(sf::VideoMode(sf::Vector2u(grille.cols()*tileSize, grille.rows() * tileSize)), "Pacman");
+    sf::RenderWindow window(sf::VideoMode(sf::Vector2u(grille.cols()*tileSize, grille.rows() * tileSize+tileSize*2)), "Pacman");
+    if (!showStartScreen(window)) {
+        return 0;
+    }
+
+    // affichage du texte du score
+    sf::Font font2;
+    if (!font2.openFromFile("img/font/namco__.ttf")) {
+        return -1; // erreur si la police ne charge pas
+    }
+
+    sf::Text scoreText(font2, "score ", 20);
+    scoreText.setFillColor(sf::Color::Yellow);
+    scoreText.setPosition({30.f, 5.f});
+
+
 
 
     int startX = 1; // case x de depart
@@ -29,6 +44,10 @@ int main() {
 
     sf::Sprite pacman(pacmanTextures[0]);
 
+    // création des fantomes 
+    sf::CircleShape fantome(tileSize * 0.4f);
+    fantome.setFillColor(sf::Color::Red);
+
     pacman.setOrigin({
     pacman.getLocalBounds().size.x / 2.f,
     pacman.getLocalBounds().size.y / 2.f
@@ -42,11 +61,25 @@ int main() {
         diametre / bounds.y
     });
     
-
+    // position du pacman au départ
     pacman.setPosition({
         startX * tileSize + tileSize / 2.f,
         startY * tileSize + tileSize / 2.f
     });
+
+    // position fantôme 
+    int ghostStartX = 1;
+    int ghostStartY = 5;
+
+    float rayonFantome = fantome.getRadius();
+
+    fantome.setPosition({
+        ghostStartX * tileSize + tileSize / 2.f - rayonFantome,
+        ghostStartY * tileSize + tileSize / 2.f - rayonFantome
+    }); 
+
+    // direction fantome
+    sf::Vector2f directionFantome = {60.f, 0.f};
 
     float speed = 90.f; // gérer la vitesse de déplacement de Pacman 
     sf::Vector2f directionActuelle = {0.f, 0.f};
@@ -152,6 +185,16 @@ int main() {
             pacman.setPosition({centerX, pacman.getPosition().y}); // idem ci-dessus
         }
 
+        // tunnel de gauche à droite
+        float droiteX = grille.cols() * tileSize; // la dernière colonne de droite (vide)
+        float gaucheX = 0.f; // la première colonne de gauche (vide)
+        if (pacman.getPosition().x < gaucheX) {
+            pacman.setPosition({droiteX, pacman.getPosition().y});
+        }
+        else if (pacman.getPosition().x > droiteX) {
+            pacman.setPosition({gaucheX, pacman.getPosition().y});
+        }
+
         center = pacman.getPosition(); // on a change sa postion donc on recalule le centre pour bien aligné
 
         sf::Vector2f mouvement = directionActuelle * dt; // calcul du mouvmeent de la framer 
@@ -195,10 +238,53 @@ int main() {
         int Y = (pacman.getPosition().y) / tileSize;
         grille.point(X, Y);
 
+        //mouvement fantome
+        float rayonFantome = fantome.getRadius(); // on obtient le rayon du cercle
+
+        sf::Vector2f mouvementFantome = directionFantome * dt; // *dt pour qu'il aille à l amême vitesse tout le temps
+        sf::Vector2f nextPosFantome = fantome.getPosition() + mouvementFantome; // on calcule la futurue position possible
+        sf::Vector2f nextCenterFantome = nextPosFantome + sf::Vector2f(rayonFantome, rayonFantome); // et le futur centre 
+
+        sf::Vector2f testPointFantome = nextCenterFantome; // on initialise le testpoint pour qu'il teste oû sont les murs
+
+        if (directionFantome.x > 0) { // ces conditions déplace le testpoint pour qu'il soit placé au bon endroit "sur" le fantome
+            testPointFantome.x += rayonFantome;
+        }
+        else if (directionFantome.x < 0) {
+            testPointFantome.x -= rayonFantome;
+        }
+        else if (directionFantome.y > 0) {
+            testPointFantome.y += rayonFantome;
+        }
+        else if (directionFantome.y < 0) {
+            testPointFantome.y -= rayonFantome;
+        }
+
+        int ghostCellX = (int)(testPointFantome.x / tileSize); // la cellule du fantome x 
+        int ghostCellY = (int)(testPointFantome.y / tileSize);
+
+        bool ghostBlocked = grille.isWall(ghostCellX, ghostCellY); //on regarde is la cellule testé est un mur
+
+        if (!ghostBlocked) { // si il n'est pas bloqué
+            fantome.move(mouvementFantome); // onn le fait bouger
+        }
+        else {
+            directionFantome = -directionFantome; // il va à l'inverse
+        }
+
+        // Si le Pacman mange un point, on change la couleur du point pour ne plus l'afficher
+        int X = (pacman.getPosition().x) / tileSize; // calculer la position du pacman en fonction
+        int Y = (pacman.getPosition().y) / tileSize;
+        score += grille.point(X, Y);
+        scoreText.setString("score " + std::to_string(score) + " points");
+
         // Etape pour ce qui s'affiche dans la fenêtre
+
         window.clear();
         grille.draw(window);
         window.draw(pacman);
+        window.draw(fantome);
+        window.draw(scoreText);
         window.display();
     }
 
