@@ -3,17 +3,20 @@
 #include <cmath>
 #include <vector>
 #include "start.hpp"
+#include "game_over.hpp"
+#include <iostream>
 
 int main() {
 
     // taille du carre
     const int tileSize = 32;
     int score = 0; // score du joueur
+    int vies = 0; // nombre de vies de pacman
 
     // création de la grille
     Grille grille(tileSize);
 
-    //Cr&ation de la fenêtre
+    //Création de la fenêtre
     sf::RenderWindow window(sf::VideoMode(sf::Vector2u(grille.cols()*tileSize, grille.rows() * tileSize+tileSize*2)), "Pacman");
     if (!showStartScreen(window)) {
         return 0;
@@ -75,10 +78,15 @@ int main() {
 
     float rayonFantome = fantome.getRadius();
 
+    // centre le fantôme correctement
+    fantome.setOrigin({ rayonFantome, rayonFantome });
+
+    // place le fantôme au centre de la case
     fantome.setPosition({
-        ghostStartX * tileSize + tileSize / 2.f - rayonFantome,
-        ghostStartY * tileSize + tileSize / 2.f - rayonFantome
-    }); 
+        ghostStartX * tileSize + tileSize / 2.f,
+        ghostStartY * tileSize + tileSize / 2.f
+    });
+
 
     // direction fantome
     sf::Vector2f directionFantome = {60.f, 0.f};
@@ -270,11 +278,33 @@ int main() {
             directionFantome = -directionFantome; // il va à l'inverse
         }
 
-        // Si le Pacman mange un point, on change la couleur du point pour ne plus l'afficher
-        int X = (pacman.getPosition().x) / tileSize; // calculer la position du pacman en fonction
-        int Y = (pacman.getPosition().y) / tileSize;
-        score += grille.point(X, Y);
+        int X = pacman.getPosition().x / tileSize;
+        int Y = pacman.getPosition().y / tileSize;
+
+        int valeur = grille.point(X, Y);  // mange la boule
+        score += valeur;
+
+        // si c’est une boule verte → +1 vie
+        if (valeur == 1) {   // 1 = code renvoyé par 'v'
+            vies += 1;
+            std::cout << "Pac-Man a gagné une vie ! Total : " << vies << "\n";
+        }
+
         scoreText.setString("score " + std::to_string(score) + " points");
+
+        // Test de collision ici, à chaque frame
+        if (!gererMortPacman(
+                pacman,
+                fantome,
+                vies,
+                tileSize,
+                startX, startY,
+                ghostStartX, ghostStartY
+            ))
+        {
+            window.close(); // game over
+        }
+
 
         // Etape pour ce qui s'affiche dans la fenêtre
 

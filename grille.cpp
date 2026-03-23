@@ -125,8 +125,8 @@ int Grille::point(int x, int y)
     else if (map[y][x] == 'v') 
     {
         map[y][x] = ' ';
-        bonuspoint++;        
-        return 1; // vie bonus
+        vies = vies + 1; // on ajoute une vie;        
+        return 0; // vie bonus
     }
     else if (map[y][x] == 'c') 
     {

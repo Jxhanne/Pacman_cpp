@@ -12,6 +12,7 @@ public: // ce qui va être partagé aux autres codes
     int cols() const; // egal
     bool isWall(int x, int y) const; // pour les collisions avec les murs
     int bonuspoint = 0; // variable globale pour compter les bonus points
+    int vies = 0; // variable globale pour compter les vies
     
     private: // ce qui appartient à la grille en interne 
     std::vector<std::string> map; // la carte
