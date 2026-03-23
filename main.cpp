@@ -5,6 +5,7 @@
 #include "start.hpp"
 #include "game_over.hpp"
 #include <iostream>
+#include "start.hpp"
 
 int main() {
 
@@ -16,23 +17,23 @@ int main() {
     // création de la grille
     Grille grille(tileSize);
 
-    //Création de la fenêtre
-    sf::RenderWindow window(sf::VideoMode(sf::Vector2u(grille.cols()*tileSize, grille.rows() * tileSize+tileSize*2)), "Pacman");
+    //Cr&ation de la fenêtre
+    sf::RenderWindow window(sf::VideoMode(sf::Vector2u(grille.cols()*tileSize, grille.rows() * tileSize)), "Pacman");
+
+    // Écran de début
     if (!showStartScreen(window)) {
         return 0;
     }
 
-    // affichage du texte du score
+    // --- SCORE TEXT ---
     sf::Font font2;
     if (!font2.openFromFile("assets/PressStart2P-Regular.ttf")) {
-        return -1; // erreur si la police ne charge pas
+        return -1;
     }
 
-    sf::Text scoreText(font2, "score ", 20);
+    sf::Text scoreText(font2, "score 0 points", 20);
     scoreText.setFillColor(sf::Color::Yellow);
     scoreText.setPosition({30.f, 5.f});
-
-
 
 
     int startX = 1; // case x de depart
