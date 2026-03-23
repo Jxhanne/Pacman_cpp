@@ -6,6 +6,7 @@
 #include "game_over.hpp"
 #include <iostream>
 #include "start.hpp"
+#include "animations_mort.hpp"
 
 int main() {
 
@@ -17,7 +18,7 @@ int main() {
     // création de la grille
     Grille grille(tileSize);
 
-    //Cr&ation de la fenêtre
+    // création de la fenêtre
     sf::RenderWindow window(sf::VideoMode(sf::Vector2u(grille.cols()*tileSize, grille.rows() * tileSize)), "Pacman");
 
     // Écran de début
@@ -25,7 +26,7 @@ int main() {
         return 0;
     }
 
-    // --- SCORE TEXT ---
+    // text score et font
     sf::Font font2;
     if (!font2.openFromFile("assets/PressStart2P-Regular.ttf")) {
         return -1;
@@ -39,7 +40,7 @@ int main() {
     int startX = 1; // case x de depart
     int startY = 1; // case y de depart
 
-    
+    // Texture et sprite de pacman
     std::vector<sf::Texture> pacmanTextures(5);
 
     if (!pacmanTextures[0].loadFromFile("assets/1.png")) return -1;
@@ -49,6 +50,12 @@ int main() {
     if (!pacmanTextures[4].loadFromFile("assets/5.png")) return -1;
 
     sf::Sprite pacman(pacmanTextures[0]);
+
+    // Texture de l'animation de mort
+    std::vector<sf::Texture> mortTextures(12);
+    for (int i = 0; i < 12; i++) {
+        mortTextures[i].loadFromFile("assets/M-" + std::to_string(i+1) + ".png");
+    }
 
     // création des fantomes 
     sf::CircleShape fantome(tileSize * 0.4f);
@@ -295,18 +302,18 @@ int main() {
 
         // Test de collision ici, à chaque frame
         if (!gererMortPacman(
-                pacman,
-                fantome,
-                vies,
-                tileSize,
-                startX, startY,
-                ghostStartX, ghostStartY
-            ))
-        {
-            window.close(); // game over
-        }
-
-
+        pacman,
+        fantome,
+        vies,
+        tileSize,
+        startX, startY,
+        ghostStartX, ghostStartY,
+        window,
+        mortTextures
+        ))
+    {
+        window.close();
+    }
         // Etape pour ce qui s'affiche dans la fenêtre
 
         window.clear();
@@ -318,4 +325,4 @@ int main() {
     }
 
     return 0;
-}
+}gi

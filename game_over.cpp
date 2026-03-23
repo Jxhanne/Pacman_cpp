@@ -2,6 +2,7 @@
 #include <cmath>
 #include "game_over.hpp"
 #include <iostream>
+#include "animations_mort.hpp"
 
 static bool collide(const sf::Sprite& pacman, const sf::CircleShape& fantome)
 {
@@ -24,47 +25,37 @@ static bool collide(const sf::Sprite& pacman, const sf::CircleShape& fantome)
     return dist2 <= somme * somme;
 }
 
-bool gererMortPacman(
-    sf::Sprite& pacman,
-    sf::CircleShape& fantome,
-    int& vies,
-    int tileSize,
-    int startX, int startY,
-    int ghostStartX, int ghostStartY
-) {
-    float rayonFantome = fantome.getRadius();
-
+bool gererMortPacman(sf::Sprite& pacman,
+                     sf::CircleShape& fantome,
+                     int& vies,
+                     int tileSize,
+                     int startX, int startY,
+                     int ghostStartX, int ghostStartY,
+                     sf::RenderWindow& window,
+                     const std::vector<sf::Texture>& mortTextures)
+{
     if (!collide(pacman, fantome))
-        return true; // pas de collision → Pac-Man continue
+        return true;
 
-    // Collision détectée
     vies--;
 
-    if (vies > 0)
-    {
-        std::cout << "Pac-Man a perdu une vie ! Il en reste : " << vies << "\n";
+    // --- ANIMATION DE MORT ---
+    jouerAnimationMort(window, pacman, mortTextures);
 
-        // Respawn Pac-Man
-        pacman.setPosition({
-            startX * tileSize + tileSize / 2.f,
-            startY * tileSize + tileSize / 2.f
-        });
+    if (vies <= 0)
+        return false;
 
-        // Respawn fantôme
-        float rayonFantome = fantome.getRadius();
-        fantome.setOrigin({ rayonFantome, rayonFantome });
+    // respawn pacman
+    pacman.setPosition({
+        startX * tileSize + tileSize / 2.f,
+        startY * tileSize + tileSize / 2.f
+    });
 
-        fantome.setPosition({
+    // respawn fantôme
+    fantome.setPosition({
         ghostStartX * tileSize + tileSize / 2.f,
         ghostStartY * tileSize + tileSize / 2.f
     });
 
-
-        sf::sleep(sf::seconds(1));
-        return true; // Pac-Man continue
-    }
-
-    // Plus de vies → GAME OVER
-    std::cout << "GAME OVER\n";
-    return false;
+    return true;
 }

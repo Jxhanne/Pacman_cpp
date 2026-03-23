@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 #include "grille.hpp"
-// autre
 #include <iostream>
 
 Grille::Grille(int t)
