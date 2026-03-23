@@ -14,7 +14,7 @@ int main() {
     // taille du carre
     const int tileSize = 32;
     int score = 0; // score du joueur
-    int vies = 0; // nombre de vies de pacman
+    int vies = 3; // nombre de vies de pacman
 
     // création de la grille
     Grille grille(tileSize);
