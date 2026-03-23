@@ -2,28 +2,35 @@
 
 bool showStartScreen(sf::RenderWindow& window) {
 
-    // Charger la police d'écriture
     sf::Font font;
-
-    // Vérifier si la police a été chargée correctement
     if (!font.openFromFile("assets/PressStart2P-Regular.ttf")) {
-        return false; // on quitte l'écran de début si la police n'est pas trouvée
+        return false;
     }
-    
-    font.openFromFile("assets/PressStart2P-Regular.ttf");
 
-    // Affiche le texte
-    sf::Text startText(font, "START", 35); 
-    startText.setFillColor(sf::Color::White);
-    startText.setPosition({330.f, 260.f}); 
-
-    // Le bouton pour lancer le jeu 
-    sf::RectangleShape button({200.f, 80.f});
+    // Affichage du bouton "START"
+    sf::Vector2f buttonSize(250.f, 90.f);
+    sf::RectangleShape button(buttonSize);
     button.setFillColor(sf::Color(50, 50, 200));
-    button.setPosition({315.f, 240.f});
 
-    // Quand on clique sur le bouton, ça lance le jeu 
+    // centrer le bouton
+    button.setOrigin({buttonSize.x / 2.f, buttonSize.y / 2.f});
+    button.setPosition({
+        window.getSize().x / 2.f,
+        window.getSize().y / 2.f
+    });
+
+    // Texte du bouton "START"
+    sf::Text startText(font, "START", 35);
+    startText.setFillColor(sf::Color::White);
+
+    // centrer le texte dans le bouton
+    auto tb = startText.getLocalBounds();
+    startText.setOrigin({tb.size.x / 2.f, tb.size.y / 2.f});
+    startText.setPosition(button.getPosition());
+
+    // Boucle d'attente sur l'écran de début
     while (window.isOpen()) {
+
         while (auto event = window.pollEvent()) {
 
             if (event->is<sf::Event::Closed>()) {
@@ -31,18 +38,20 @@ bool showStartScreen(sf::RenderWindow& window) {
             }
 
             if (event->is<sf::Event::MouseButtonPressed>()) {
-                auto mouse = sf::Mouse::getPosition(window);
+                auto* mouse = event->getIf<sf::Event::MouseButtonPressed>();
+                if (!mouse) continue;
 
-                if (button.getGlobalBounds().contains(
-                        sf::Vector2f(mouse.x, mouse.y))) {
+                sf::Vector2f pos(mouse->position.x, mouse->position.y);
+
+                if (button.getGlobalBounds().contains(pos)) {
                     return true;
                 }
             }
         }
 
-        window.clear(sf::Color::Black); // fond noir 
-        window.draw(button); // dessine le bouton 
-        window.draw(startText); // écrit le texte
+        window.clear(sf::Color::Black);
+        window.draw(button);
+        window.draw(startText);
         window.display();
     }
 

@@ -7,6 +7,7 @@
 #include <iostream>
 #include "start.hpp"
 #include "animations_mort.hpp"
+#include "menu_fin.hpp"
 
 int main() {
 
@@ -312,8 +313,17 @@ int main() {
         mortTextures
         ))
     {
+    // Affichage du menu de fin 
+    ChoixFin choix = afficherMenuFin(window, score);
+
+    if (choix == ChoixFin::Rejouer) {
+        return main(); // relance le jeu proprement
+    }
+
+    if (choix == ChoixFin::Quitter) {
         window.close();
     }
+}
         // Etape pour ce qui s'affiche dans la fenêtre
 
         window.clear();
@@ -325,4 +335,4 @@ int main() {
     }
 
     return 0;
-}gi
+}
