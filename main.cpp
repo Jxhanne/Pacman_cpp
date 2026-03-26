@@ -4,6 +4,8 @@
 #include <vector>
 #include "start.hpp"
 #include <cstdlib>
+#include <iostream>
+#include <windows.h>
 #include <ctime>
 
 
@@ -22,11 +24,16 @@ void updateScore (int& score, int tileSize, Grille& grille, const sf::Sprite& pa
     scoreText.setString("score " + std::to_string(score) + " points");
 }
 
-void dessiner (sf::RenderWindow& window, Grille& grille, sf::Sprite& pacman, sf::CircleShape& fantome, sf::Text& scoreText){
+void dessiner(sf::RenderWindow& window,Grille& grille,sf::Sprite& pacman,std::vector<sf::CircleShape>& fantomes,sf::Text& scoreText)
+{
     window.clear();
     grille.draw(window);
     window.draw(pacman);
-    window.draw(fantome);
+
+    for (auto& fantome : fantomes) {
+        window.draw(fantome);
+    }
+
     window.draw(scoreText);
     window.display();
 }
@@ -52,47 +59,213 @@ void gererInputPacman (sf::Vector2f& directionDemandee, float speed){
         directionDemandee = {0.f, speed};
     }
 }
+float distance(sf::Vector2f a, sf::Vector2f b) {
+    return std::abs(a.x - b.x) + std::abs(a.y - b.y);
 
-void updateFantome(sf::CircleShape& fantome, sf::Vector2f& directionFantome, float dt, int tileSize, const Grille& grille) {
-    float rayonFantome = fantome.getRadius();
-    sf::Vector2f mouvementFantome = directionFantome * dt; // *dt pour qu'il aille à l amême vitesse tout le temps
-    sf::Vector2f nextPosFantome = fantome.getPosition() + mouvementFantome; // on calcule la futurue position possible
-    sf::Vector2f nextCenterFantome = nextPosFantome; // et le futur centre 
-
-    sf::Vector2f testPointFantome = nextCenterFantome; // on initialise le testpoint pour qu'il teste oû sont les murs
-
-    if (directionFantome.x > 0) { // ces conditions déplace le testpoint pour qu'il soit placé au bon endroit "sur" le fantome
-        testPointFantome.x += rayonFantome;
-    }
-    else if (directionFantome.x < 0) {
-        testPointFantome.x -= rayonFantome;
-    }
-    else if (directionFantome.y > 0) {
-        testPointFantome.y += rayonFantome;
-    }
-    else if (directionFantome.y < 0) {
-        testPointFantome.y -= rayonFantome;
-    }
-
-    int ghostCellX = (int)(testPointFantome.x / tileSize); // la cellule du fantome x 
-    int ghostCellY = (int)(testPointFantome.y / tileSize);
-
-    bool ghostBlocked = grille.isWall(ghostCellX, ghostCellY); //on regarde is la cellule testé est un mur
-
-    if (!ghostBlocked) { // si il n'est pas bloqué
-        fantome.move(mouvementFantome); // onn le fait bouger
-    }
-    else {
-        int r = std::rand() % 4;
-
-        if (r == 0) directionFantome = {60.f, 0.f};   // droite
-        if (r == 1) directionFantome = {-60.f, 0.f};  // gauche
-        if (r == 2) directionFantome = {0.f, 60.f};   // bas
-        if (r == 3) directionFantome = {0.f, -60.f};  // haut
-    }
 
 }
 
+bool estCroisement(int x, int y, const Grille& grille) {
+    bool droite = !grille.isWall(x + 1, y);
+    bool gauche = !grille.isWall(x - 1, y);
+    bool bas = !grille.isWall(x, y + 1);
+    bool haut = !grille.isWall(x, y - 1);
+
+    int count = droite + gauche + bas + haut;
+
+    // 🔥 vrai croisement = au moins 3 directions
+    if (count >= 3) return true;
+
+    // 🔥 OU angle (ex: droite + bas)
+    if ((droite || gauche) && (haut || bas)) return true;
+
+    return false;
+}
+
+void updateFantome(
+    sf::CircleShape& fantome,
+    Grille& grille,
+    int tileSize,
+    sf::Vector2f& direction,
+    float dt,
+    const sf::Sprite& pacman)
+{
+    float vitesse = 60.f;
+
+    //sécurité : si direction nulle → on force une direction
+    if (direction.x == 0 && direction.y == 0) {
+        direction = {vitesse, 00.f};
+    }
+
+    //position actuelle
+    sf::Vector2f position = fantome.getPosition();
+
+    //case actuelle dans la grille
+    int caseX = position.x / tileSize;
+    int caseY = position.y / tileSize;
+
+    //centre de la case actuelle
+    float centreX = caseX * tileSize + tileSize / 2.f;
+    float centreY = caseY * tileSize + tileSize / 2.f;
+
+    //vérifier si le fantôme est bien centré
+    float marge = 2.f;
+    bool aligneX = std::abs(position.x - centreX) <= marge;
+    bool aligneY = std::abs(position.y - centreY) <= marge;
+
+    //réaligner parfaitement sur la grille (évite les bugs)
+    if (direction.x != 0) {
+        position.y = centreY;
+    } else if (direction.y != 0) {
+        position.x = centreX;
+    }
+
+    fantome.setPosition(position);
+
+    //est-ce un croisement ?
+    bool estIntersection = estCroisement(caseX, caseY, grille);
+
+    //CHOIX DE DIRECTION (SEULEMENT AUX CROISEMENTS)
+    if (aligneX && aligneY && estIntersection) {
+
+        //directions possibles
+        std::vector<sf::Vector2f> directionsPossibles = {
+            {vitesse, 0.f}, {-vitesse, 0.f},
+            {0.f, vitesse}, {0.f, -vitesse}
+        };
+
+        float meilleureDistance = 999999.f;
+        sf::Vector2f meilleureDirection = direction;
+        bool directionTrouvee = false;
+
+        //tester chaque direction
+        for (auto dir : directionsPossibles) {
+
+            //éviter de faire demi-tour
+            if (dir.x == -direction.x && dir.y == -direction.y)
+                continue;
+
+            int testX = caseX;
+            int testY = caseY;
+
+            int profondeur = 3; // lookahead
+
+            //simulation sur plusieurs cases
+            for (int i = 0; i < profondeur; i++) {
+
+                if (dir.x > 0) testX++;
+                else if (dir.x < 0) testX--;
+                else if (dir.y > 0) testY++;
+                else if (dir.y < 0) testY--;
+
+                //stop si mur
+                if (grille.isWall(testX, testY)) break;
+            }
+
+            //position simulée
+            float futurX = testX * tileSize + tileSize / 2.f;
+            float futurY = testY * tileSize + tileSize / 2.f;
+
+            sf::Vector2f positionFuture(futurX, futurY);
+
+            //distance au joueur
+            float distancePacman =
+                std::abs(pacman.getPosition().x - positionFuture.x) +
+                std::abs(pacman.getPosition().y - positionFuture.y);
+
+            float margeChoix = 5.f;
+
+            //garder la meilleure direction
+            if (!directionTrouvee || distancePacman < meilleureDistance - margeChoix) {
+                meilleureDistance = distancePacman;
+                meilleureDirection = dir;
+                directionTrouvee = true;
+            }
+        }
+
+        //Fallback si aucune direction trouvée
+        if (!directionTrouvee) {
+            for (auto dir : directionsPossibles) {
+
+                int testX = caseX;
+                int testY = caseY;
+
+                if (dir.x > 0) testX++;
+                else if (dir.x < 0) testX--;
+                else if (dir.y > 0) testY++;
+                else if (dir.y < 0) testY--;
+
+                if (!grille.isWall(testX, testY)) {
+                    meilleureDirection = dir;
+                    break;
+                }
+            }
+        }
+
+        //appliquer la nouvelle direction
+        direction = meilleureDirection;
+    }
+
+    //ANTI-BLOCAGE (mur devant)
+    sf::Vector2f pointTest = fantome.getPosition();
+    float margeMur = 3.f;
+    float rayon = fantome.getRadius();
+
+    if (direction.x > 0) pointTest.x += rayon + margeMur;
+    else if (direction.x < 0) pointTest.x -= rayon + margeMur;
+    else if (direction.y > 0) pointTest.y += rayon + margeMur;
+    else if (direction.y < 0) pointTest.y -= rayon + margeMur;
+
+    int murX = pointTest.x / tileSize;
+    int murY = pointTest.y / tileSize;
+
+    //si mur → trouver autre direction
+    if (grille.isWall(murX, murY)) {
+
+        std::vector<sf::Vector2f> directionsPossibles = {
+            {vitesse, 0.f}, {-vitesse, 0.f},
+            {0.f, vitesse}, {0.f, -vitesse}
+        };
+
+        bool trouve = false;
+
+        for (auto dir : directionsPossibles) {
+
+            sf::Vector2f test = fantome.getPosition();
+
+            if (dir.x > 0) test.x += rayon + margeMur;
+            else if (dir.x < 0) test.x -= rayon + margeMur;
+            else if (dir.y > 0) test.y += rayon + margeMur;
+            else if (dir.y < 0) test.y -= rayon + margeMur;
+
+            int x = test.x / tileSize;
+            int y = test.y / tileSize;
+
+            if (!grille.isWall(x, y)) {
+                direction = dir;
+                trouve = true;
+                break;
+            }
+        }
+
+        // dernier recours
+        if (!trouve) {
+            int r = std::rand() % 4;
+            if (r == 0) direction = {vitesse, 0.f};
+            if (r == 1) direction = {-vitesse, 0.f};
+            if (r == 2) direction = {0.f, vitesse};
+            if (r == 3) direction = {0.f, -vitesse};
+        }
+    }
+
+    // sécurité finale
+    if (direction.x == 0 && direction.y == 0) {
+        direction = {vitesse, 0.f};
+    }
+
+    // déplacement
+    fantome.move(direction * dt);
+}
 void updatePacman(sf::Sprite& pacman,Grille& grille,sf::Vector2f& directionActuelle,const sf::Vector2f& directionDemandee,int tileSize,float rayonPacman,float dt){
     sf::Vector2f center = pacman.getPosition();
     int currentCellX = (int)(center.x / tileSize); // cellule actuelle 
@@ -243,71 +416,78 @@ int main() {
 
     
     std::vector<sf::Texture> pacmanTextures(5);
-
+    float rayonPacman = tileSize * 0.4f;
     if (!pacmanTextures[0].loadFromFile("assets/1.png")) return -1;
     if (!pacmanTextures[1].loadFromFile("assets/2.png")) return -1;
     if (!pacmanTextures[2].loadFromFile("assets/3.png")) return -1;
     if (!pacmanTextures[3].loadFromFile("assets/4.png")) return -1;
     if (!pacmanTextures[4].loadFromFile("assets/5.png")) return -1;
 
-    sf::Sprite pacman(pacmanTextures[0]);
 
     // création des fantomes 
-    sf::CircleShape fantome(tileSize * 0.4f);
-    fantome.setFillColor(sf::Color::Red);
+    std::vector<sf::CircleShape> fantomes;
+    std::vector<sf::Vector2f> directionsFantomes;
 
-    pacman.setOrigin({
-    pacman.getLocalBounds().size.x / 2.f,
-    pacman.getLocalBounds().size.y / 2.f
-    });
-    float rayonPacman = tileSize * 0.4f; // rayon pacman
-    float diametre = rayonPacman * 2.f;
+    std::vector<sf::Color> couleurs = {
+        sf::Color::Red,
+        sf::Color::Blue,
+        sf::Color::Green,
+        sf::Color::Magenta
+    };
 
-    auto bounds = pacman.getLocalBounds().size;
-    pacman.setScale({
-        diametre / bounds.x,
-        diametre / bounds.y
-    });
+    std::vector<sf::Vector2i> spawnFantomes = {
+        {14, 11}, // centre
+        {13, 11}, // gauche
+        {13, 12}, // droite
+        {14, 12}  // dessous
+    };
+
+    for (int i = 0; i < 4; i++) {
+        sf::CircleShape fantome(tileSize * 0.4f);
+        fantome.setFillColor(couleurs[i]);
+
+        fantome.setOrigin(sf::Vector2f(fantome.getRadius(),fantome.getRadius()));
+
+        int tileX = spawnFantomes[i].x;
+        int tileY = spawnFantomes[i].y;
+
+        fantome.setPosition({
+            tileX * tileSize + tileSize / 2.f,
+            tileY * tileSize + tileSize / 2.f
+        });
+
+        fantomes.push_back(fantome);
+
+        // direction initiale (vers le haut = sortie)
+        directionsFantomes.push_back({0.f, -60.f});
+    }
     
     // position du pacman au départ
+    sf::Sprite pacman(pacmanTextures[0]);
+
+    pacman.setOrigin({
+        pacman.getTexture().getSize().x / 2.f,
+        pacman.getTexture().getSize().y / 2.f
+    });
+
+    // 2. SCALE
+    float scale = (tileSize * 0.8f) / pacman.getTexture().getSize().x;
+    pacman.setScale({scale, scale});
+
+    // 3. POSITION (APRÈS origin + scale)
     pacman.setPosition({
         startX * tileSize + tileSize / 2.f,
         startY * tileSize + tileSize / 2.f
     });
-
 
     float speed = 90.f; // gérer la vitesse de déplacement de Pacman 
     sf::Vector2f directionActuelle = {0.f, 0.f};
     sf::Vector2f directionDemandee = {0.f, 0.f};
 
     // ########################################################### FIN PACMAN ###########################################################
-
-    // ########################################################### FANTÔME ###########################################################
-    // création des fantomes 
-    sf::CircleShape fantome(tileSize * 0.4f);
-    fantome.setFillColor(sf::Color::Red);
-    // centrer l'origine du fantôme
-    fantome.setOrigin({
-        fantome.getRadius(),
-        fantome.getRadius()
-    });
-
-
-
-    // position fantôme 
-    int ghostStartX = 1;
-    int ghostStartY = 3;
-
-    float rayonFantome = fantome.getRadius();
-
-    fantome.setPosition({
-        ghostStartX * tileSize + tileSize / 2.f,
-        ghostStartY * tileSize + tileSize / 2.f
-    }); 
-
-    // direction fantome
-    sf::Vector2f directionFantome = {60.f, 0.f};
-
+     
+    // ########################################################### FANTÔME ###########################################################  
+    
     // ########################################################### FIN FANTOME ###########################################################
 
 
@@ -321,6 +501,10 @@ int main() {
     std::srand(std::time(nullptr));
     int score = 0;
 
+    sf::Clock ghostClock;
+    int fantomesActifs = 1;
+    float delai = 4.f;
+
     while (window.isOpen()) {
         // ########################################################### CLAVIER ###########################################################
         gererEvenements(window);
@@ -328,7 +512,12 @@ int main() {
         float dt = clock.restart().asSeconds(); // Le temps depuis la dernière frame 
         if (animationClock.getElapsedTime().asSeconds() > animationSpeed) {
             frame = (frame + 1) % 5;
-            pacman.setTexture(pacmanTextures[frame]);
+            pacman.setTexture(pacmanTextures[frame], true); // true = reset rect
+
+            pacman.setOrigin({
+                pacman.getTexture().getSize().x / 2.f,
+                pacman.getTexture().getSize().y / 2.f
+            });
             animationClock.restart();
         }
         // On change de direction quand une touche est cliquée : les flêches ou ZQSD
@@ -338,19 +527,25 @@ int main() {
 
         // Avoir un mouvement fluide du Pacman
         
-        updatePacman(pacman, grille, directionActuelle, directionDemandee, tileSize, rayonPacman, dt);
-
+        
         
 
         //mouvement fantome 
-
-        updateFantome(fantome, directionFantome, dt, tileSize, grille);
+        if (ghostClock.getElapsedTime().asSeconds() > delai && fantomesActifs < fantomes.size()) {
+            fantomesActifs++;
+            ghostClock.restart();
+        }
+        std::cout << "CALL FANTOME" << std::endl;
+        for (int i = 0; i < fantomesActifs; i++) {
+            updateFantome(fantomes[i], grille, tileSize, directionsFantomes[i], dt, pacman);
+        }
+        updatePacman(pacman, grille, directionActuelle, directionDemandee, tileSize, rayonPacman, dt);
 
        // Si le Pacman mange un point, on change la couleur du point pour ne plus l'afficher
         updateScore(score,tileSize, grille,pacman,scoreText);
         // Etape pour ce qui s'affiche dans la fenêtre
 
-        dessiner(window, grille, pacman, fantome, scoreText);
+        dessiner(window, grille, pacman, fantomes, scoreText);
     }
 
     return 0;
