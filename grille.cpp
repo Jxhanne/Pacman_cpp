@@ -24,11 +24,11 @@ Grille::Grille(int t)
         "#.####.##.########.##.####.#",
         "#.####.##.########.##.####.#",
         "#..b...##....##....##...b..#",
-        "######.#####.##.#####.######",
-        "      .     ....     .      ",
-        "######.##          ##.######",
-        "#......##          ##......#",
-        "#.####.##          ##.####.#",
+        "# ####.#####.##.#####.#### #",
+        "XX    .     ....     .    XX",
+        "######.## ##XXXX## ##.######",
+        "#......## #      # ##......#",
+        "#.####.## #      # ##.####.#",
         "#......   ########   ......#",
         "#.####.## ######## ##.####.#",
         "#......##          ##......#",
@@ -149,7 +149,7 @@ int Grille::cols() const
 }
 
 // fonction pour les murs
-bool Grille::isWall(int x, int y) const
+bool Grille::isWall(int x, int y, bool estFantome) const
 {
     if (x < 0 || x >= cols() || y < 0 || y >= rows()){
         return false; // pas de mur mais hors de la grille --> on peut se tp
@@ -157,5 +157,8 @@ bool Grille::isWall(int x, int y) const
     if (map[y][x] == '#'){
         return true; // mur donc collision
     }
+    // barrière invisible pour fantômes
+    if (map[y][x] == 'X' && estFantome)
+        return true;
     return false; // pas de mur
 }
