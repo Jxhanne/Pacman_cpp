@@ -14,7 +14,7 @@ int main() {
     // taille du carre
     const int tileSize = 32;
     int score = 0; // score du joueur
-    int vies = 3; // nombre de vies de pacman
+    int vies = 2; // nombre de vies de pacman
 
     // création de la grille
     Grille grille(tileSize);
@@ -57,6 +57,19 @@ int main() {
     for (int i = 0; i < 12; i++) {
         mortTextures[i].loadFromFile("assets/M-" + std::to_string(i+1) + ".png");
     }
+
+    // Texture pour afficher les vies de Pac-man 
+    sf::Texture textureVie;
+    textureVie.loadFromFile("assets/vie.png");
+
+    sf::Sprite vieSprite1(textureVie);
+    sf::Sprite vieSprite2(textureVie);
+    sf::Sprite vieSprite3(textureVie);
+
+    vieSprite1.setScale({0.17f, 0.17f});
+    vieSprite2.setScale({0.17f, 0.17f});
+    vieSprite3.setScale({0.17f, 0.17f});
+
 
     // création des fantomes 
     sf::CircleShape fantome(tileSize * 0.4f);
@@ -301,6 +314,17 @@ int main() {
 
         scoreText.setString("score " + std::to_string(score) + " points");
 
+        float scoreWidth = scoreText.getLocalBounds().size.x;
+
+        // Position de la premiere vie à droite du score
+        vieSprite1.setPosition({25.f + scoreWidth + 20.f,5.f});
+
+        // Position de la deuxime vie 
+        vieSprite2.setPosition({25.f + scoreWidth + 60.f,5.f});
+
+        // Position de la troisieme vie 
+        vieSprite3.setPosition({25.f + scoreWidth + 100.f,5.f});
+
         // Test de collision ici, à chaque frame
         if (!gererMortPacman(
         pacman,
@@ -331,6 +355,8 @@ int main() {
         window.draw(pacman);
         window.draw(fantome);
         window.draw(scoreText);
+        if (vies >= 1) window.draw(vieSprite1);
+        if (vies >= 2) window.draw(vieSprite2);
         window.display();
     }
 
