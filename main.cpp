@@ -25,7 +25,7 @@ void updateScore (int& score, int tileSize, Grille& grille, const sf::Sprite& pa
     scoreText.setString("score " + std::to_string(score) + " points");
 }
 
-void dessiner(sf::RenderWindow& window,Grille& grille,sf::Sprite& pacman,std::vector<Fantome>& fantomes,sf::Text& scoreText)
+void dessiner(sf::RenderWindow& window, Grille& grille, sf::Sprite& pacman, std::vector<Fantome>& fantomes, sf::Text& scoreText, int vies, sf::Sprite& vieSprite1, sf::Sprite& vieSprite2)
 {
     window.clear();
     grille.draw(window);
@@ -37,6 +37,8 @@ void dessiner(sf::RenderWindow& window,Grille& grille,sf::Sprite& pacman,std::ve
     
 
     window.draw(scoreText);
+    if (vies >= 1) window.draw(vieSprite1);
+    if (vies >= 2) window.draw(vieSprite2);
     window.display();
 }
 
@@ -208,6 +210,16 @@ int main() {
     scoreText.setFillColor(sf::Color::Yellow);
     scoreText.setPosition({30.f, 5.f});
 
+    // Texture des vies 
+    sf::Texture textureVie;
+    textureVie.loadFromFile("assets/vie.png");
+
+    sf::Sprite vieSprite1(textureVie);
+    sf::Sprite vieSprite2(textureVie);
+
+    vieSprite1.setScale({0.17f, 0.17f});
+    vieSprite2.setScale({0.17f, 0.17f});
+
 
 
     // ########################################################### FIN Grille ###########################################################
@@ -278,6 +290,7 @@ int main() {
     // aléatoire 
     std::srand(std::time(nullptr));
     int score = 0;
+    int vies = 2; 
 
     sf::Clock ghostClock;
     int fantomesActifs = 1;
@@ -308,6 +321,37 @@ int main() {
         
         for (auto& f : fantomes)
             f.update(dt, pacman.getPosition(), tileSize, grille, pacman);
+
+
+        // --- Collision Pac-Man / Fantômes ---
+        for (auto& f : fantomes) {
+            float dx = pacman.getPosition().x - f.getPosition().x;
+            float dy = pacman.getPosition().y - f.getPosition().y;
+            float dist = std::sqrt(dx*dx + dy*dy);
+
+            if (dist < tileSize * 0.6f) {
+                // Pac-Man perd une vie
+                vies--;
+
+                if (vies <= 0) {
+                    // GAME OVER → pour l'instant on ferme la fenêtre
+                    window.close();
+                    break;
+                }
+
+                // Respawn Pac-Man
+                pacman.setPosition({
+                    startX * tileSize + tileSize / 2.f,
+                    startY * tileSize + tileSize / 2.f
+                });
+
+                // Respawn fantômes
+                for (auto& g : fantomes)
+                    g.resetPosition();
+
+                break; // éviter plusieurs collisions en même temps
+            }
+        }
        
         updatePacman(pacman, grille, directionActuelle, directionDemandee, tileSize, rayonPacman, dt);
 
@@ -315,7 +359,14 @@ int main() {
         updateScore(score,tileSize, grille,pacman,scoreText);
         // Etape pour ce qui s'affiche dans la fenêtre
 
-        dessiner(window, grille, pacman, fantomes, scoreText);
+
+        // Position des vies en fonction de la largeur du score
+        float scoreWidth = scoreText.getLocalBounds().size.x;
+
+        vieSprite1.setPosition({30.f + scoreWidth + 20.f, 5.f});
+        vieSprite2.setPosition({30.f + scoreWidth + 60.f, 5.f});
+
+        dessiner(window, grille, pacman, fantomes, scoreText, vies, vieSprite1, vieSprite2);
     }
 
     return 0;

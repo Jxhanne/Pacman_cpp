@@ -9,6 +9,8 @@ public:
 
     void update(float dt, sf::Vector2f posJoueur, int tileSize, const Grille& grille, sf::Sprite& pacman);
     void draw(sf::RenderWindow& window);
+    sf::Vector2f getPosition() const { return forme.getPosition(); }
+    void resetPosition();
 
 private:
     void quitterZone(float dt, int tileSize);
@@ -21,4 +23,5 @@ private:
     sf::Vector2i cellulePrecedente = {-1, -1};
     float delaiSortie;
     float timerSortie = 0.f;
+    sf::Vector2f positionDepart;
 };
