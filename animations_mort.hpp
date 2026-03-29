@@ -1,8 +1,9 @@
-#pragma once
-#include <SFML/Graphics.hpp>
-#include <vector>
+#ifndef START_HPP
+#define START_HPP
 
-void jouerAnimationMort(sf::RenderWindow& window,
-                        sf::Sprite& pacman,
-                        const std::vector<sf::Texture>& mortTextures,
-                        float frameTime = 0.08f);
+#include <SFML/Graphics.hpp>
+
+// Lance le jeu quand on clique sur le bouton START, sinon ça ferme la fenêtre
+bool showStartScreen(sf::RenderWindow& window);
+
+#endif

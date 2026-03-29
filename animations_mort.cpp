@@ -2,23 +2,22 @@
 
 void jouerAnimationMort(sf::RenderWindow& window,
                         sf::Sprite& pacman,
-                        const std::vector<sf::Texture>& mortTextures,
-                        float frameTime)
+                        const std::vector<sf::Texture>& frames)
 {
-    sf::Clock animClock;
+    for (const auto& texture : frames)
+    {
+        pacman.setTexture(texture, true);
 
-    for (int i = 0; i < mortTextures.size(); i++) {
-
-        pacman.setTexture(mortTextures[i]);
-
-        // petite pause entre les frames
-        while (animClock.getElapsedTime().asSeconds() < frameTime) {
-            // on laisse SFML respirer
-        }
-        animClock.restart();
+        pacman.setOrigin({
+            texture.getSize().x / 2.f,
+            texture.getSize().y / 2.f
+        });
 
         window.clear();
         window.draw(pacman);
         window.display();
+
+        sf::Clock clock;
+        while (clock.getElapsedTime() < sf::milliseconds(80)) {}
     }
 }
