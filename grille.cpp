@@ -1,4 +1,3 @@
-// include pour l'affichage
 #include <SFML/Graphics.hpp>
 #include <optional>
 #include <vector>
@@ -38,7 +37,7 @@ Grille::Grille(int t)
 }
 ;
 
-    // créartion du mur
+    // création du mur
     wall.setFillColor(sf::Color::Blue);
 
     //création point
@@ -52,7 +51,7 @@ Grille::Grille(int t)
     pellet4.setOrigin({pellet4.getRadius(), pellet4.getRadius()}); // centrer le point
 }
 
-// fonction qui dessine la grille (PAS de boucle window ici)
+// fonction qui dessine la grille 
 void Grille::draw(sf::RenderWindow& window)
 {
     // on parcours chaque ligne
@@ -61,7 +60,7 @@ void Grille::draw(sf::RenderWindow& window)
         // et chaque case dans la ligne
         for (int x = 0; x < cols(); ++x)
         {
-            char c = map[y][x]; // c revient à la case précise (coordonnées de rows et de col)
+            char c = map[y][x]; // c revient à la case précise 
             sf::Vector2f pos{ x * (float)tileSize, y * (float)tileSize }; // calcule la position lié a la tilesize
 
             // si mur

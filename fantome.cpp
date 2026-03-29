@@ -1,9 +1,11 @@
+// include pour l'affichage
 #include <SFML/Graphics.hpp>
 #include <optional>
 #include <vector>
 #include <string>
 #include "grille.hpp"
 #include <cmath>
+// autre
 #include <iostream>
 #include "fantome.hpp"
 
@@ -15,7 +17,6 @@ Fantome::Fantome(sf::Color couleur, sf::Vector2f positionDepart, float vitesse,f
     forme.setFillColor(couleur);
     forme.setPosition(positionDepart);
     forme.setOrigin(sf::Vector2f(12.f,12.f));
-    this->positionDepart = positionDepart;
     this->vitesse = vitesse;
     aSorti= false;
     direction = sf::Vector2f(0.f, -1.f);
@@ -115,13 +116,4 @@ void Fantome::suivreJoueur(float dt, sf::Vector2f posJoueur, int tileSize, const
 void Fantome::draw(sf::RenderWindow& window)
 {
     window.draw(forme);
-}
-
-void Fantome::resetPosition()
-{
-    forme.setPosition(positionDepart);
-    aSorti = false;
-    timerSortie = 0.f;
-    direction = sf::Vector2f(0.f, -1.f);
-    cellulePrecedente = {-1, -1};
 }

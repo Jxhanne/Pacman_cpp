@@ -27,6 +27,7 @@ void updateScore (int& score, int tileSize, Grille& grille, const sf::Sprite& pa
     scoreText.setString("score " + std::to_string(score) + " points");
 }
 
+// fonction qui dessine tous les éléments à l'écran
 void dessiner(sf::RenderWindow& window, Grille& grille, sf::Sprite& pacman, std::vector<Fantome>& fantomes, sf::Text& scoreText, int vies, sf::Sprite& vieSprite1, sf::Sprite& vieSprite2)
 {
     window.clear();
@@ -44,6 +45,7 @@ void dessiner(sf::RenderWindow& window, Grille& grille, sf::Sprite& pacman, std:
     window.display();
 }
 
+// fonction qui gère les inputs du joueur pour le déplacement de pacman
 void gererInputPacman (sf::Vector2f& directionDemandee, float speed){
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) ||
         sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q)) {
@@ -65,16 +67,12 @@ void gererInputPacman (sf::Vector2f& directionDemandee, float speed){
         directionDemandee = {0.f, speed};
     }
 }
+
 float distance(sf::Vector2f a, sf::Vector2f b) {
     return std::abs(a.x - b.x) + std::abs(a.y - b.y);
-
-
 }
 
-
-
-
-
+// fonction qui gère le déplacement de pacman en fonction des inputs et de la grille
 void updatePacman(sf::Sprite& pacman,Grille& grille,sf::Vector2f& directionActuelle,const sf::Vector2f& directionDemandee,int tileSize,float rayonPacman,float dt){
     sf::Vector2f center = pacman.getPosition();
     int currentCellX = (int)(center.x / tileSize); // cellule actuelle 
@@ -182,6 +180,7 @@ void updatePacman(sf::Sprite& pacman,Grille& grille,sf::Vector2f& directionActue
     }
 }
 
+// fonction qui joue l'animation de mort de pacman
 void jouerAnimationMort(sf::RenderWindow& window, std::vector<sf::Texture>& frames, sf::Sprite& pacman)
     {
         for (auto& texture : frames)
@@ -207,10 +206,6 @@ void jouerAnimationMort(sf::RenderWindow& window, std::vector<sf::Texture>& fram
 
 
 int main() {
-
-    
-
-    // ########################################################### Grille ###########################################################
 
     // taille du carre
     const int tileSize = 32;
@@ -248,15 +243,6 @@ int main() {
     vieSprite1.setScale({0.17f, 0.17f});
     vieSprite2.setScale({0.17f, 0.17f});
 
-
-
-    // ########################################################### FIN Grille ###########################################################
-
-    // ########################################################### FANTOME ###########################################################
-
-
-    // ########################################################### PACMAN ###########################################################
-
     int startX = 1; // case x de depart
     int startY = 1; // case y de depart
 
@@ -269,6 +255,7 @@ int main() {
     if (!pacmanTextures[3].loadFromFile("assets/4.png")) return -1;
     if (!pacmanTextures[4].loadFromFile("assets/5.png")) return -1;
 
+    // Textures de pacman pour l'animation de mort
     std::vector<sf::Texture> mortFrames(12);
 
     for (int i = 0; i < 12; i++)
@@ -277,7 +264,6 @@ int main() {
     }
 
     // création des fantomes 
-    
     std::vector<Fantome> fantomes = {
         Fantome(sf::Color::Red,              {14 * tileSize+ tileSize/2.f, 11 * tileSize+ tileSize/2.f}, 100.f, 0.f),
         Fantome(sf::Color(255, 182, 255),    {13 * tileSize+ tileSize/2.f, 11 * tileSize+ tileSize/2.f}, 100.f, 3.f),
@@ -294,11 +280,11 @@ int main() {
         pacman.getTexture().getSize().y / 2.f
     });
 
-    // 2. SCALE
+    // Mesure la taille du sprite de pacman et l'adapte à la taille des cases
     float scale = (tileSize * 0.8f) / pacman.getTexture().getSize().x;
     pacman.setScale({scale, scale});
 
-    // 3. POSITION (APRÈS origin + scale)
+    // positionne le pacman au centre de la case de départ
     pacman.setPosition({
         startX * tileSize + tileSize / 2.f,
         startY * tileSize + tileSize / 2.f
@@ -307,10 +293,6 @@ int main() {
     float speed = 90.f; // gérer la vitesse de déplacement de Pacman 
     sf::Vector2f directionActuelle = {0.f, 0.f};
     sf::Vector2f directionDemandee = {0.f, 0.f};
-
-    // ########################################################### FIN PACMAN ###########################################################
-     
-    
 
 
     // Horloge pour mésurer le temps entre chaque frame 
@@ -322,12 +304,16 @@ int main() {
     // aléatoire 
     std::srand(std::time(nullptr));
 
+    // Horloge pour gérer le délai d'apparition des fantômes
     sf::Clock ghostClock;
     int fantomesActifs = 1;
     float delai = 4.f;
 
+
+    // Boucle principale du jeu
     while (window.isOpen()) {
-        // ########################################################### CLAVIER ###########################################################
+
+        // Partie clavier 
         gererEvenements(window);
 
         float dt = clock.restart().asSeconds(); // Le temps depuis la dernière frame 
@@ -344,16 +330,12 @@ int main() {
         // On change de direction quand une touche est cliquée : les flêches ou ZQSD
         gererInputPacman(directionDemandee, speed);
 
-        // ########################################################### FIN CLAVIER ###########################################################
-
-       
-        
-        
+        // Gérer le délai d'apparition des fantômes
         for (auto& f : fantomes)
             f.update(dt, pacman.getPosition(), tileSize, grille, pacman);
 
 
-        // --- Collision Pac-Man / Fantômes ---
+        // Collision entre pacman et les fantomes
         for (auto& f : fantomes)
         {
             float dx = pacman.getPosition().x - f.getPosition().x;
@@ -362,14 +344,14 @@ int main() {
 
             if (dist < tileSize * 0.6f)
             {
-                // Pac-Man perd une vie
+                // Pacman perd une vie et animation de mort
                 vies--;
 
                 jouerAnimationMort(window, mortFrames, pacman);
 
                 if (vies <= 0)
                 {
-                    // GAME OVER → menu de fin
+                    // Afficher le menu de fin
                     ChoixFin choix = afficherMenuFin(window, score);
 
                     if (choix == ChoixFin::Quitter)
@@ -378,29 +360,30 @@ int main() {
                         break;
                     }
 
-                    // Rejouer → reset
+                    // Bouton rejouer
                     vies = 2;
                     score = 0;
                     grille.bonuspoint = 0;
 
-                    // Reset positions
+                    // Retour de pacman au départ
                     pacman.setPosition({
                         startX * tileSize + tileSize / 2.f,
                         startY * tileSize + tileSize / 2.f
                     });
-
+                    // Retour des fantomes au départ
                     for (auto& g : fantomes)
                         g.resetPosition();
 
                     break;
                 }
 
-                // Respawn normal
+                // Retour de pacman au départ
                 pacman.setPosition({
                     startX * tileSize + tileSize / 2.f,
                     startY * tileSize + tileSize / 2.f
                 });
 
+                // Retour des fantomes au départ
                 for (auto& g : fantomes)
                     g.resetPosition();
 
@@ -412,8 +395,6 @@ int main() {
 
        // Si le Pacman mange un point, on change la couleur du point pour ne plus l'afficher
         updateScore(score,tileSize, grille,pacman,scoreText);
-        // Etape pour ce qui s'affiche dans la fenêtre
-
 
         // Position des vies en fonction de la largeur du score
         float scoreWidth = scoreText.getLocalBounds().size.x;
