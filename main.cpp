@@ -4,6 +4,7 @@
 #include <vector>
 #include "start.hpp"
 #include "fantome.hpp"
+#include "game_over.hpp"
 #include <cstdlib>
 #include <iostream>
 #include <windows.h>
@@ -180,6 +181,28 @@ void updatePacman(sf::Sprite& pacman,Grille& grille,sf::Vector2f& directionActue
     }
 }
 
+void jouerAnimationMort(sf::RenderWindow& window, std::vector<sf::Texture>& frames, sf::Sprite& pacman)
+    {
+        for (auto& texture : frames)
+        {
+            pacman.setTexture(texture);
+
+            pacman.setTextureRect(
+                sf::IntRect(
+                    {0, 0},
+                    { (int)texture.getSize().x, (int)texture.getSize().y }
+                )
+            );
+
+            window.clear();
+            window.draw(pacman);
+            window.display();
+
+            sf::Clock clock;
+            while (clock.getElapsedTime() < sf::milliseconds(80)) {}
+        }
+    }
+
 
 
 int main() {
@@ -242,6 +265,13 @@ int main() {
     if (!pacmanTextures[2].loadFromFile("assets/3.png")) return -1;
     if (!pacmanTextures[3].loadFromFile("assets/4.png")) return -1;
     if (!pacmanTextures[4].loadFromFile("assets/5.png")) return -1;
+
+    std::vector<sf::Texture> mortFrames(12);
+
+    for (int i = 0; i < 12; i++)
+    {
+        mortFrames[i].loadFromFile("assets/M-" + std::to_string(i+1) + ".png");
+    }
 
 
     // création des fantomes 
@@ -332,6 +362,7 @@ int main() {
             if (dist < tileSize * 0.6f) {
                 // Pac-Man perd une vie
                 vies--;
+                jouerAnimationMort(window, mortFrames, pacman);
 
                 if (vies <= 0) {
                     // GAME OVER → pour l'instant on ferme la fenêtre
